@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>음성 입력 챗봇</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 3rem;
+    }
+    .search-container {
+      display: flex;
+      align-items: center;
+      border: 2px solid #ccc;
+      border-radius: 30px;
+      padding: 0.5rem 1rem;
+      width: 500px;
+      margin: 0 auto;
+    }
+    #searchInput {
+      border: none;
+      flex: 1;
+      font-size: 1.1rem;
+      outline: none;
+    }
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.3rem;
+      margin-left: 0.5rem;
+    }
+    #micBtn.recording {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="증상을 입력해주세요" />
+    <button class="icon-btn" id="micBtn">🎙️</button>
+    <button class="icon-btn" id="searchBtn">🔍</button>
+  </div>
+
+  <script>
+    const micBtn = document.getElementById("micBtn");
+    const searchInput = document.getElementById("searchInput");
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'ko-KR';
+    recognition.interimResults = true;
+    recognition.continuous = true; // 계속 듣게 해두고, 무음 감지로 종료
+
+    let isListening = false;
+    let silenceTimer = null;
+
+    micBtn.addEventListener("click", () => {
+      if (isListening) {
+        stopListening();
+      } else {
+        startListening();
+      }
+    });
+
+    function startListening() {
+      recognition.start();
+      micBtn.textContent = "⏺️"; // 빨간 녹화 아이콘
+      micBtn.classList.add("recording");
+      isListening = true;
+    }
+
+    function stopListening() {
+      recognition.stop();
+      micBtn.textContent = "🎙️";
+      micBtn.classList.remove("recording");
+      isListening = false;
+      clearTimeout(silenceTimer);
+    }
+
+    recognition.onresult = (event) => {
+      let text = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        text += event.results[i][0].transcript;
+      }
+      searchInput.value = text;
+
+      // 사용자가 소리를 냈으니 타이머 초기화
+      clearTimeout(silenceTimer);
+      silenceTimer = setTimeout(() => {
+        stopListening();
+      }, 5000); // 5초간 무음이면 종료
+    };
+
+    recognition.onerror = (e) => {
+      alert("음성 인식 오류: " + e.error);
+      stopListening();
+    };
+
+    recognition.onend = () => {
+      stopListening();
+    };
+  </script>
+
+</body>
+</html>
