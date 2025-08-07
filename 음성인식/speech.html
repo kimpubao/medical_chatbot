@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>음성 입력 데모</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    button { padding: 1rem; font-size: 1rem; }
+    #output { margin-top: 2rem; font-size: 1.2rem; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h2>🎙️ 음성 입력 (Speech-to-Text)</h2>
+  <button id="startBtn">🎤 음성 입력 시작</button>
+  <button id="stopBtn">🛑 중지</button>
+  <div id="output"></div>
+
+  <script>
+    const output = document.getElementById('output');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'ko-KR'; // 한국어
+    recognition.interimResults = true; // 중간 결과도 출력
+    recognition.continuous = true; // 멈추지 않고 계속 듣기
+
+    recognition.onresult = (event) => {
+      let text = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        text += event.results[i][0].transcript;
+      }
+      output.textContent = text;
+    };
+
+    recognition.onerror = (event) => {
+      console.error('음성 인식 오류:', event.error);
+    };
+
+    startBtn.onclick = () => {
+      recognition.start();
+      output.textContent = '듣고 있어요... 🎤';
+    };
+
+    stopBtn.onclick = () => {
+      recognition.stop();
+      output.textContent += '\n[음성 입력 종료]';
+    };
+  </script>
+</body>
+</html>
